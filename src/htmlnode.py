@@ -37,7 +37,7 @@ class ParentNode(HTMLNode):
         return f"<{self.tag}{self.props_to_html()}>{children_html}</{self.tag}>"
 
 def text_node_to_html_node(text_node):
-    if text_node.text_type == textnode.TextType.NORMAL:
+    if text_node.text_type == textnode.TextType.TEXT:
         return LeafNode(tag=None, value=text_node.text, props=None)
     elif text_node.text_type == textnode.TextType.BOLD:
         return LeafNode(tag="b", value=text_node.text, props=None)

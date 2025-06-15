@@ -138,7 +138,7 @@ class TestParentNode(unittest.TestCase):
 class TestTextNodeToHTMLNode(unittest.TestCase):
     # Test that the text texttype is properly converted to html
     def test_text(self):
-        node =  textnode.TextNode("This is a text node", textnode.TextType.NORMAL)
+        node =  textnode.TextNode("This is a text node", textnode.TextType.TEXT)
         html_node = htmlnode.text_node_to_html_node(node)
         self.assertEqual(html_node.tag, None)
         self.assertEqual(html_node.value, "This is a text node") 
@@ -178,7 +178,9 @@ class TestTextNodeToHTMLNode(unittest.TestCase):
         self.assertEqual(html_node.props, {"src":test_image_url, "alt":"This is an image node"})
     # Test an incorrect texttype
     def test_unknown_type(self):
-        node =  textnode.TextNode("This is a text node", textnode.TextType.NORMAL)
+        node =  textnode.TextNode("This is a text node", textnode.TextType.TEXT)
         node.text_type = "unknown"
         with self.assertRaises(ValueError):
             htmlnode.text_node_to_html_node(node)
+    
+    
