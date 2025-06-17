@@ -21,8 +21,8 @@ class TestSplitNodeDelimiter(unittest.TestCase):
         self.assertEqual(new_nodes, [new_node_1, new_node_2, new_node_3])
     # test for inline italic block text
     def test_inline_italic_text(self):
-        node = TextNode("This is text with a *italic block* word", TextType.TEXT)
-        new_nodes = split_nodes_delimiter([node], "*", TextType.ITALIC)
+        node = TextNode("This is text with a _italic block_ word", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "_", TextType.ITALIC)
         new_node_1 = TextNode("This is text with a ", TextType.TEXT)
         new_node_2 = TextNode("italic block", TextType.ITALIC)
         new_node_3 = TextNode(" word", TextType.TEXT)
@@ -198,6 +198,53 @@ class TestSplitNodesLink(unittest.TestCase):
         node = TextNode("This is text with an ![link](https://www.google.com) and text at the end", TextType.TEXT)
         new_nodes = split_nodes_link([node])
         self.assertListEqual([TextNode("This is text with an ![link](https://www.google.com) and text at the end", TextType.TEXT)], new_nodes)
+
+class TestToTextNodes(unittest.TestCase):
+    def test_full_conversion(self):
+        text = "This is **text** with an _italic_ word and a `code block` and " \
+        "an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        self.assertListEqual([TextNode("This is ", TextType.TEXT),
+            TextNode("text", TextType.BOLD),
+            TextNode(" with an ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" word and a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE),
+            TextNode(" and an ", TextType.TEXT),
+            TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+            TextNode(" and a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://boot.dev")], text_to_textnodes(text))
+    
+    def test_normal_text(self):
+        text = "This is just normal text"
+        self.assertListEqual([TextNode("This is just normal text", TextType.TEXT)], text_to_textnodes(text))
+
+    def test_empty(self):
+        text = ""
+        self.assertListEqual([], text_to_textnodes(text))
+    
+    def test_multiples(self):
+        text = "This is **text****with** an _italic__word_ and `a``code block` and " \
+        "an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg)![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)[link](https://boot.dev)"
+        self.assertListEqual([TextNode("This is ", TextType.TEXT),
+            TextNode("text", TextType.BOLD),
+            TextNode("with", TextType.BOLD),
+            TextNode(" an ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode("word", TextType.ITALIC),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("a", TextType.CODE),
+            TextNode("code block", TextType.CODE),
+            TextNode(" and an ", TextType.TEXT),
+            TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+            TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+            TextNode(" and a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+            TextNode("link", TextType.LINK, "https://boot.dev")], text_to_textnodes(text))
+    
+    def test_only_one_type(self):
+        text = "**This text only****has bold text in it**"
+        self.assertListEqual([TextNode("This text only", TextType.BOLD),
+            TextNode("has bold text in it", TextType.BOLD)], text_to_textnodes(text))
 
 if __name__ == "__main__":
     unittest.main()
