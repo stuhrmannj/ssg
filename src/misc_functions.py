@@ -95,9 +95,3 @@ def text_to_textnodes(text):
     with_italic = split_nodes_delimiter(with_bold,"_", TextType.ITALIC)
     with_code =  split_nodes_delimiter(with_italic,"`", TextType.CODE)
     return with_code
-
-# converts a raw string of markdown text and returns a list of block strings
-def markdown_to_blocks(markdown):
-    blocks = markdown.split("\n\n")
-    blocks_stripped = [block.strip() for block in blocks if block.strip() != ""]
-    return blocks_stripped
