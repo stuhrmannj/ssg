@@ -1,6 +1,7 @@
 import unittest
 from textnode import *
 from misc_functions import *
+from blocks import *
 
 class TestSplitNodeDelimiter(unittest.TestCase):
     # test for inline code block text
@@ -246,5 +247,129 @@ class TestToTextNodes(unittest.TestCase):
         self.assertListEqual([TextNode("This text only", TextType.BOLD),
             TextNode("has bold text in it", TextType.BOLD)], text_to_textnodes(text))
         
+class TestMarkdownToHTMLNode(unittest.TestCase):
+    def test_paragraphs(self):
+        md = """
+This is **bolded** paragraph
+text in a p
+tag here
+
+This is another paragraph with _italic_ text and `code` here
+"""
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><p>This is <b>bolded</b> paragraph text in a p tag here</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div>",
+        )
+
+    def test_codeblock(self):
+        md = """
+```
+This is text that _should_ remain
+the **same** even with inline stuff
+```
+"""
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>",
+        )
+    
+    def test_heading(self):
+        md = "## This is a heading"
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><h2>This is a heading</h2></div>"
+        )
+
+    def test_blockquote(self):
+        md = "> This is a quote\n> with two lines."
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><blockquote>This is a quote with two lines.</blockquote></div>"
+        )
+
+    def test_olist(self):
+        md = "1. First item\n2. Second item"
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><ol><li>First item</li><li>Second item</li></ol></div>"
+        )
+
+    def test_ulist(self):
+        md = "- Apple\n- Banana\n- Cherry"
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><ul><li>Apple</li><li>Banana</li><li>Cherry</li></ul></div>"
+        )
+
+    def test_paragraph_with_link(self):
+        md = "Check [Boot.dev](https://boot.dev) for more info."
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            '<div><p>Check <a href="https://boot.dev">Boot.dev</a> for more info.</p></div>',
+        )
+
+    def test_paragraph_with_image(self):
+        md = "Here is an image: ![Alt](img.png)"
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            '<div><p>Here is an image: <img src="img.png" alt="Alt" /></p></div>',
+        )
+
+    def test_combined_blocks(self):
+        md = """# Heading Example
+
+This is a **bold** and _italic_ paragraph with a [link](https://boot.dev) and an image ![Logo](logo.png).
+
+> This is a quote
+> that spans multiple lines.
+
+- List item 1
+- List **item** 2
+
+1. First ordered
+2. Second _ordered_
+
+```
+code example
+with multiple lines
+```
+"""
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            (
+                '<div>'
+                '<h1>Heading Example</h1>'
+                '<p>This is a <b>bold</b> and <i>italic</i> paragraph with a '
+                '<a href="https://boot.dev">link</a> and an image '
+                '<img src="logo.png" alt="Logo" />.</p>'
+                '<blockquote>This is a quote that spans multiple lines.</blockquote>'
+                '<ul><li>List item 1</li><li>List <b>item</b> 2</li></ul>'
+                '<ol><li>First ordered</li><li>Second <i>ordered</i></li></ol>'
+                '<pre><code>code example\nwith multiple lines\n</code></pre>'
+                '</div>'
+            )
+        )
+
 if __name__ == "__main__":
     unittest.main()

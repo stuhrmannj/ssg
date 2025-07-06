@@ -1,4 +1,6 @@
 from textnode import *
+from blocks import *
+from htmlnode import *
 import re
 
 # splits text nodes for different inline text types
@@ -95,3 +97,89 @@ def text_to_textnodes(text):
     with_italic = split_nodes_delimiter(with_bold,"_", TextType.ITALIC)
     with_code =  split_nodes_delimiter(with_italic,"`", TextType.CODE)
     return with_code
+
+# convert text block to children html nodes
+def text_to_children(block):
+    textnodes = text_to_textnodes(block)
+    htmlnodes = []
+    for textnode in textnodes:
+        htmlnodes.append(text_node_to_html_node(textnode))
+    return htmlnodes
+
+def markdown_to_html_node(markdown):
+    # split markdown into blocks
+    blocks = markdown_to_blocks(markdown)
+    
+    # prepare a list to collect HTML block nodes
+    block_nodes = []
+
+    # loop through each block
+    for block in blocks:
+        # determine the type of block
+        block_type = block_to_block_type(block)
+
+        # create appropriate HTMLNode(s) for this block
+        if block_type == BlockType.PARAGRAPH:
+            clean_block = block.replace("\n", " ")
+            children_nodes = text_to_children(clean_block)
+            block_html_node = ParentNode("p", children_nodes, None)
+        elif block_type == BlockType.QUOTE:
+            lines = block.splitlines()
+            cleaned_lines = []
+            for line in lines:
+                # Remove leading '>' and any following whitespace
+                if line.strip().startswith(">"):
+                    cleaned_lines.append(line.lstrip()[1:].lstrip())
+                else:
+                    cleaned_lines.append(line)
+            clean_block = " ".join(cleaned_lines)
+            children_nodes = text_to_children(clean_block)
+            block_html_node = ParentNode("blockquote", children_nodes, None)
+        elif block_type == BlockType.HEADING:
+            count = 0
+            for char in block:
+                if char == "#":
+                    count += 1
+                else:
+                    break
+            children_nodes = text_to_children(block[count:].lstrip())
+            block_html_node = ParentNode(f"h{count}", children_nodes, None)
+        elif block_type == BlockType.CODE:
+            # Split the block into lines
+            lines = block.splitlines()
+            # Remove the opening and closing ```
+            if lines and lines[0].strip().startswith("```"):
+                lines = lines[1:]
+            if lines and lines[-1].strip().startswith("```"):
+                lines = lines[:-1]
+            code_content = "\n".join(lines) + "\n"  # The `+ "\n"` keeps trailing newline as in sample outputs 
+            code_text_node = TextNode(code_content, TextType.CODE, None)
+            code_html_node = text_node_to_html_node(code_text_node)
+            block_html_node = ParentNode("pre", [code_html_node], None)
+        elif block_type == BlockType.OLIST:
+            olist = []
+            block_lines = block.splitlines()
+            for block_line in block_lines:
+                match = re.match(r"\s*\d+\.\s*(.*)", block_line)
+                if match:
+                    content = match.group(1)
+                else:
+                    content = block_line.lstrip()
+                item_node = ParentNode("li", text_to_children(content), None)
+                olist.append(item_node)
+            block_html_node = ParentNode("ol", olist, None)
+        elif block_type == BlockType.ULIST:
+            ulist = []
+            block_lines = block.splitlines()
+            for block_line in block_lines:
+                content = block_line[2:]
+                item_node = ParentNode("li", text_to_children(content), None)
+                ulist.append(item_node)
+            block_html_node = ParentNode("ul", ulist, None)
+  
+        # Add your completed HTMLNode to the block_nodes list
+        block_nodes.append(block_html_node)
+
+    # return a parent <div> node containing all the block_nodes as children
+    complete_html_node = ParentNode("div", block_nodes, None)
+    return complete_html_node
