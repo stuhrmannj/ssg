@@ -371,5 +371,19 @@ with multiple lines
             )
         )
 
+class TestExtractTitle(unittest.TestCase):
+    def test_normal_header(self):
+        markdown = "# Hello World"
+        self.assertEqual(extract_title(markdown), "Hello World")
+
+    def test_extra_whitespace(self):
+        markdown = "   #   Shire News   "
+        self.assertEqual(extract_title(markdown), "Shire News")
+
+    def test_no_header(self):
+        markdown = "## Only h2 here"
+        with self.assertRaises(Exception):
+            extract_title(markdown)
+
 if __name__ == "__main__":
     unittest.main()

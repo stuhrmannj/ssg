@@ -183,3 +183,11 @@ def markdown_to_html_node(markdown):
     # return a parent <div> node containing all the block_nodes as children
     complete_html_node = ParentNode("div", block_nodes, None)
     return complete_html_node
+
+def extract_title(markdown):
+    lines = markdown.splitlines()
+    for line in lines:
+        if line.lstrip().startswith("# "):
+            title = line.lstrip()[2:]
+            return title.strip()
+    raise Exception("No header found.")

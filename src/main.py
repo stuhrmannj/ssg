@@ -1,5 +1,6 @@
 import os
 import shutil
+from build import *
 
 def copy_recursive(src, dst):
     for entry in os.listdir(src):
@@ -31,6 +32,14 @@ def main():
 
     # call the copy function to copy entire static directory into the public directory
     copy_recursive(static_dir, public_dir)
+
+    project_root = os.path.join(src_dir, "..")
+
+    content_md = os.path.join(project_root, "content", "index.md")
+    template_html = os.path.join(project_root, "template.html")
+    public_html = os.path.join(project_root, "public", "index.html")
+    
+    generate_page(content_md, template_html, public_html)
 
 if __name__ == "__main__":
     main()
