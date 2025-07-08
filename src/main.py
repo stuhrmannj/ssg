@@ -1,6 +1,7 @@
 import os
 import shutil
 from build import *
+import sys
 
 def copy_recursive(src, dst):
     for entry in os.listdir(src):
@@ -17,29 +18,34 @@ def main():
     # identifies the directory this file is run from
     src_dir = os.path.dirname(os.path.abspath(__file__))
 
-    # identifies the directory one level up, where public should be
-    public_dir = os.path.join(src_dir, "..", "public")
+    # identifies the directory one level up, where docs should be
+    docs_dir = os.path.join(src_dir, "..", "docs")
 
     # identifies the static directory, also one level up
     static_dir = os.path.join(src_dir, "..", "static")
 
-    # check if public exists, and if it does, delete it
-    if os.path.exists(public_dir):
-        shutil.rmtree(public_dir)
+    # check if docs exists, and if it does, delete it
+    if os.path.exists(docs_dir):
+        shutil.rmtree(docs_dir)
 
-    # create a new public directory
-    os.mkdir(public_dir)
+    # create a new docs directory
+    os.mkdir(docs_dir)
 
-    # call the copy function to copy entire static directory into the public directory
-    copy_recursive(static_dir, public_dir)
+    # call the copy function to copy entire static directory into the docs directory
+    copy_recursive(static_dir, docs_dir)
+
+    if len(sys.argv) > 1:
+        basepath = sys.argv[1]
+    else:
+        basepath = "/"
 
     project_root = os.path.join(src_dir, "..")
 
     content_md = os.path.join(project_root, "content")
     template_html = os.path.join(project_root, "template.html")
-    public_html = os.path.join(project_root, "public")
+    docs_html = os.path.join(project_root, "docs")
     
-    generate_pages_recursive(content_md, template_html, public_html)
+    generate_pages_recursive(content_md, template_html, docs_html, basepath)
 
 if __name__ == "__main__":
     main()
