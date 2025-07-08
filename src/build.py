@@ -31,6 +31,23 @@ def generate_page(from_path, template_path, dest_path):
     # Write the final HTML to dest_path
     with open(dest_path, "w", encoding="utf-8") as out:
         out.write(final_html)
+    
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    # Get all items in the content directory
+    items = os.listdir(dir_path_content)
+
+    print(f"Found items: {items}")
+
+    for item in items:
+        item_path = os.path.join(dir_path_content, item)
+        if os.path.isfile(item_path) and item.endswith(".md"):
+            item_html = item.replace(".md", ".html")
+            dest_path = os.path.join(dest_dir_path, item_html)
+            generate_page(item_path, template_path, dest_path)
+        elif os.path.isdir(item_path):
+            dest_path = os.path.join(dest_dir_path, item)
+            generate_pages_recursive(item_path, template_path, dest_path)
+
 
     
     

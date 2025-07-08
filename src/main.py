@@ -35,11 +35,11 @@ def main():
 
     project_root = os.path.join(src_dir, "..")
 
-    content_md = os.path.join(project_root, "content", "index.md")
+    content_md = os.path.join(project_root, "content")
     template_html = os.path.join(project_root, "template.html")
-    public_html = os.path.join(project_root, "public", "index.html")
+    public_html = os.path.join(project_root, "public")
     
-    generate_page(content_md, template_html, public_html)
+    generate_pages_recursive(content_md, template_html, public_html)
 
 if __name__ == "__main__":
     main()
